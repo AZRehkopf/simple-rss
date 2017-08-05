@@ -121,19 +121,20 @@ def updateFeeds():
 
     for url in feeds:
         createJsonAndCache(url, RSS_PATH)
-        print("Fetching " + url + "...")
+        print('Fetching ' + url + '...')
 	
     logTime(RSS_PATH)
     mergeFeeds(RSS_PATH)
 
+# Merges all individual feeds into one single file 
 def mergeFeeds(path):
 	all_data = {}
-	for file in os.listdir(path + "/cache"):
-		if not file.startswith("."):
-			with open(path + "/cache/" + file, 'r') as fp:
+	for file in os.listdir(path + '/cache'):
+		if not file.startswith('.'):
+			with open(path + '/cache/' + file, 'r') as fp:
 				all_data.update(json.load(fp))
-			with open(path + "/feeds", 'w') as fp:
+			with open(path + '/feeds', 'w') as fp:
 				json.dump(all_data, fp, sort_keys = True, indent = 4)
-			
 
-updateFeeds()
+if __name__ == '__main__':			
+	updateFeeds()
