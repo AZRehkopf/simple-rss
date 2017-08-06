@@ -1,3 +1,3 @@
 # simple-rss
 
-Accesses RSS feeds and saves useful data as JSON
+Accesses RSS feeds and renders the feed on a local webpage.
