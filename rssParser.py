@@ -1,5 +1,5 @@
 import feedparser, ssl, os, json, pytz
-import datetime as dt
+import datetime
 from dateutil import parser
 
 RSS_PATH = '/Users/atlas/Documents/Programming/Python/rssParser'
@@ -33,8 +33,6 @@ def createJsonAndCache(target, path):
                         merged = cache.copy()
                         merged.update(data)
 
-                merged = checkForNew(merged)
-
                 with open(cache_path, 'w') as fp:
                         json.dump(merged, fp, sort_keys = True, indent = 4)               
 
@@ -48,7 +46,18 @@ def collectData(target):
         feed = connectAndParseFeed(target)
 
         for articles in feed['items']:
-                titles.append(articles['title'])
+                temp = articles['title']
+                
+                temp = temp.replace('\u20ac','\'')
+                temp = temp.replace('\u201d', '\"')
+                temp = temp.replace('\u201c','\"')
+                temp = temp.replace('\u2013', '-')
+                temp = temp.replace('\u2014', '-')
+                temp = temp.replace('\u2018','\'')
+                temp = temp.replace('\u2019','\'')
+                
+                titles.append(temp)
+                
                 try: 
                     timestamps.append(str(parser.parse(articles['published'])))
                 except KeyError:
@@ -78,29 +87,15 @@ def logTime(path):
         else:
             with open(log_path, 'r') as fp:
                     log = json.load(fp)
-                    log.update({'accessed':str(dt.datetime.utcnow())})
+                    log.update({'accessed':str(datetime.datetime.utcnow())})
             with open(log_path, 'w') as fp:
                     json.dump(log, fp, sort_keys = True, indent = 4)
-
-# Returns time of the last feed access
-def getLastAccess(path):
-        path = path + '/log'
-
-        if not os.path.isfile(path):
-                return None
-        else:
-                with open(path, 'r') as fp:
-                        log = json.load(fp)
-                try: 
-                        return log['accessed']
-                except KeyError:
-                        return None
 
 # Checks if a post is in memory if it is, 'new' is set to true
 def checkForNew(data):
     for item in data:
         item_time = parser.parse(item) 
-        if (pytz.utc.localize(dt.datetime.utcnow()) - item_time) < dt.timedelta(hours = 3):
+        if (pytz.utc.localize(datetime.datetime.utcnow()) - item_time) < datetime.timedelta(hours = 3):
             data[item]['new'] = True
     return data
 
@@ -133,7 +128,7 @@ def mergeFeeds(path):
 		if not file.startswith('.'):
 			with open(path + '/cache/' + file, 'r') as fp:
 				all_data.update(json.load(fp))
-			with open(path + '/feeds', 'w') as fp:
+			with open(path + '/cache/_FEEDS', 'w') as fp:
 				json.dump(all_data, fp, sort_keys = True, indent = 4)
 
 if __name__ == '__main__':			
